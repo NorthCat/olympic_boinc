@@ -1,6 +1,8 @@
 # Olympic BOINC
 
-Olympic-style BOINC team medal standings. Once a day, the service fetches completed team challenges from [BoincStats](https://www.boincstats.com) — project challenges (`/stats/pchallenge/team/overview`) and team challenges (`/stats/challenge/team/overview`) — saves podium finishers, and serves standings over REST: gold, silver, and bronze for 1st, 2nd, and 3rd places.
+Olympic-style BOINC team medal standings with a web interface and a read-only REST API. Once a day, the service fetches completed team challenges from [BoincStats](https://www.boincstats.com) — project challenges (`/stats/pchallenge/team/overview`) and team challenges (`/stats/challenge/team/overview`) — saves podium finishers, and awards gold, silver, and bronze for 1st, 2nd, and 3rd places.
+
+Browse the [web interface](#web-ui) at `/` with year and challenge type filters and an English/Russian language selector (English by default). The [REST API](#rest-api) provides standings, challenge results, and team details; interactive API documentation is available at `/docs`. Both are served by the same application, locally or in Docker.
 
 ## How it works
 
@@ -8,6 +10,8 @@ Olympic-style BOINC team medal standings. Once a day, the service fetches comple
 BoincStats ──► scraper (Chrome + HTML parsing) ──► sync ──► PostgreSQL ──► REST API
                          ▲
                  scheduler (cron, once a day)
+
+REST API ◄── web interface (browser) / API clients
 ```
 
 - **Fetching.** BoincStats is protected by Cloudflare, so pages are fetched by a real Chrome browser through [nodriver](https://github.com/ultrafunkamsterdam/nodriver). The browser runs only for the duration of synchronization.
@@ -19,6 +23,7 @@ BoincStats ──► scraper (Chrome + HTML parsing) ──► sync ──► Po
 - **What is not fetched again.** Already saved challenges are neither fetched nor changed. Challenges without results are not saved and are checked again on the next run.
 - **CAPTCHA protection.** BoincStats shows a CAPTCHA when requests are too frequent, so there is a delay between requests (`OLYMPIC_REQUEST_DELAY`). The entire history, around 1070 challenges, is loaded over several daily runs, with recent challenges first.
 - **Teams.** A team is identified by its name exactly as shown by BoincStats. Ties are allowed: two teams in 2nd place each receive silver.
+- **Web interface.** The browser page uses the REST API to display medal standings and update year/type filters without reloading. HTML, CSS, and JavaScript are included in the application package; no separate frontend server is needed.
 - **Log.** Each run summary is written to the application log; run history is not stored in the database.
 
 ## Requirements
