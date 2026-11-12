@@ -1,0 +1,6 @@
+# Override Semgrep's default exclusion of tests; skip generated artifacts only.
+.git/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc

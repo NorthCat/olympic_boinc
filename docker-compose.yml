@@ -1,0 +1,137 @@
+services:
+  db:
+    image: postgres:18
+    # Container settings live in .docker-env (see .docker-env.example); .env is for running the app outside Docker.
+    env_file: .docker-env
+    environment:
+      POSTGRES_DB: olympic_boinc
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d olympic_boinc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    env_file: .docker-env
+    environment:
+      # Overrides .docker-env. No sync in the container: BoincStats' Cloudflare check does not pass here;
+      # data comes via the CSV import on start (IMPORT_FILE, default dumps/import.csv).
+      OLYMPIC_SCHEDULER_ENABLED: "false"
+    ports:
+      # APP_PORT is a compose substitution (shell variable), not a container setting.
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    init: true
+    volumes:
+      - ./dumps:/app/dumps
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.6
+    profiles: [observability]
+    env_file: .docker-env
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      xpack.security.http.ssl.enabled: "false"
+      xpack.security.transport.ssl.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    mem_limit: 1536m
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -u \"elastic:$${ELASTIC_PASSWORD}\" 'http://localhost:9200/_cluster/health?wait_for_status=yellow' > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  elastic-setup:
+    image: olympic-boinc-apm-setup
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.apm-setup
+    profiles: [observability]
+    env_file: .docker-env
+    environment:
+      APM_SETUP_PHASE: credentials
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.5.6
+    profiles: [observability]
+    env_file: .docker-env
+    mem_limit: 1536m
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=1024"
+    volumes:
+      - ./docker/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "127.0.0.1:5601:5601"
+    depends_on:
+      elastic-setup:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5601/api/status > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 90
+      start_period: 30s
+
+  apm-setup:
+    image: olympic-boinc-apm-setup
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.apm-setup
+    profiles: [observability]
+    env_file: .docker-env
+    depends_on:
+      kibana:
+        condition: service_healthy
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:9.5.6
+    profiles: [observability]
+    env_file: .docker-env
+    command: ["-e", "--strict.perms=false"]
+    mem_limit: 512m
+    volumes:
+      - ./docker/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
+    ports:
+      - "127.0.0.1:8200:8200"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      apm-setup:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - /usr/bin/bash
+        - -ec
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/8200;
+          printf 'GET / HTTP/1.0\r\nAuthorization: Bearer %s\r\n\r\n' "$${OLYMPIC_APM_SECRET_TOKEN:-}" >&3;
+          read -r status <&3;
+          [[ "$${status}" == *' 200 '* ]]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  pgdata:
+  esdata:

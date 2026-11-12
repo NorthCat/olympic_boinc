@@ -1,0 +1,48 @@
+# New installation: cp .docker-env.example .docker-env
+# Replace every <...> placeholder before starting containers.
+# Generate each password/key separately with: openssl rand -hex 32
+# This file contains examples, not credentials. Keep your filled .docker-env out of Git.
+# All Compose services read .docker-env; .env is for running the app outside Docker.
+
+# PostgreSQL: credentials are applied when the database volume is first initialized.
+POSTGRES_USER=olympic
+POSTGRES_PASSWORD=<postgres-password>
+
+# Use the SAME username/password as above; `db:5432` is the internal Compose address.
+# Hex passwords from openssl need no URL encoding. Otherwise percent-encode special
+# characters in the URL password: @ -> %40, / -> %2F, : -> %3A, % -> %25, # -> %23.
+OLYMPIC_DATABASE_URL=postgresql+asyncpg://olympic:<postgres-password>@db:5432/olympic_boinc
+
+# CSV import: put your export at ./dumps/import.csv on the host, or change this path.
+# Paths are relative to /app; ./dumps is mounted as /app/dumps.
+# Import runs on every app start, skips stored challenges, and adds missing ones.
+# A missing file skips import; an invalid file prevents the app from starting.
+IMPORT_FILE=dumps/import.csv
+
+# Compose forces OLYMPIC_SCHEDULER_ENABLED=false: sync runs outside Docker.
+# APP_PORT is a shell/Compose setting, not a container variable; do not set it here.
+# Example: APP_PORT=8080 docker compose up -d --build
+
+# Standard db + app launch: docker compose up -d --build
+# Full stack with APM: set OLYMPIC_APM_ENABLED=true, fill the Elastic settings below,
+# then run: docker compose --profile observability up -d --build
+OLYMPIC_APM_ENABLED=True
+OLYMPIC_APM_SERVER_URL=http://apm-server:8200
+OLYMPIC_APM_SERVICE_NAME=olympic-boinc
+OLYMPIC_APM_ENVIRONMENT=docker
+OLYMPIC_APM_TRANSACTION_SAMPLE_RATE=1.0
+# Optional: one token is used by the container agent and APM Server.
+# A host application must use the same token in its local .env.
+# OLYMPIC_APM_SECRET_TOKEN=<optional-generated-token>
+
+# Required for the observability profile: generate three DIFFERENT passwords.
+# Kibana login: username elastic, password ELASTIC_PASSWORD, http://127.0.0.1:5601
+# The service accounts are configured automatically by elastic-setup.
+ELASTIC_PASSWORD=<elastic-password>
+KIBANA_SYSTEM_PASSWORD=<kibana-system-password>
+APM_WRITER_PASSWORD=<apm-writer-password>
+
+# At least 32 characters; openssl rand -hex 32 produces 64 characters.
+# Keep this key across restarts. Changing ELASTIC_PASSWORD in this file alone
+# does not reset the administrator password of an existing Elasticsearch volume.
+KIBANA_ENCRYPTION_KEY=<kibana-encryption-key>

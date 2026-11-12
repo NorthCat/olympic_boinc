@@ -1,0 +1,4 @@
+FROM python:3.13-slim
+COPY docker/apm-setup.py /integration/setup.py
+USER 1000
+ENTRYPOINT ["python", "/integration/setup.py"]

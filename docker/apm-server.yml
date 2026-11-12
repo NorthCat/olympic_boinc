@@ -1,0 +1,8 @@
+apm-server:
+  host: "0.0.0.0:8200"
+  auth.secret_token: "${OLYMPIC_APM_SECRET_TOKEN:}"
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  username: apm_writer
+  password: "${APM_WRITER_PASSWORD}"
+logging.level: warning

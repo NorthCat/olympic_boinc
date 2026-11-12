@@ -1,0 +1,13 @@
+.env
+.docker-env
+.git
+.idea
+.venv
+**/__pycache__
+*.egg-info
+.pytest_cache
+tests/
+openspec/
+logs/
+dumps/
+*.csv

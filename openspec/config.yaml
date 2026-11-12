@@ -1,0 +1,43 @@
+schema: spec-driven
+
+context: |
+  Project: Olympic BOINC — a backend that once a day collects completed (Completed)
+  team challenges from BoincStats (project challenges: /stats/pchallenge/team/overview,
+  team challenges: /stats/challenge/team/overview) and builds Olympic-style medal
+  standings (gold/silver/bronze for 1st/2nd/3rd place).
+  Tech stack: Python 3.13 (uv, .python-version, uv.lock; environment through UV_PROJECT_ENVIRONMENT or .venv), FastAPI, REST,
+  PostgreSQL 18, SQLAlchemy 2 (async) + Alembic, pytest.
+  BoincStats is protected by Cloudflare: regular HTTP clients receive 403.
+  A team is identified by its name exactly as shown by BoincStats (without normalization); the place is taken from the BoincStats page (ties are allowed).
+  Write artifacts in English; use the keywords SHALL/MUST in requirements.
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

@@ -1,0 +1,9 @@
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.username: kibana_system
+elasticsearch.password: "${KIBANA_SYSTEM_PASSWORD}"
+xpack.encryptedSavedObjects.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
+xpack.security.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
+xpack.reporting.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
+telemetry.enabled: false
+xpack.fleet.isAirGapped: true

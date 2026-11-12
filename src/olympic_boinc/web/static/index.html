@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" data-i18n-content="description" content="Olympic-style BOINC team medal standings. Challenge results by year and type.">
+  <title>Medal standings · Olympic BOINC</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="wordmark" href="/" data-i18n-label="home" aria-label="Olympic BOINC — home">
+        <span class="podium" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>OLYMPIC <strong>BOINC</strong></span>
+      </a>
+      <div class="header-controls">
+        <span class="header-note" data-i18n="headerNote">Team achievements</span>
+        <div class="language-control">
+          <label for="language" class="sr-only" data-i18n="language">Language</label>
+          <select id="language">
+            <option value="en" lang="en">English</option>
+            <option value="ru" lang="ru">Русский</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow" data-i18n="eyebrow">Every podium finish counts</p>
+      <h1 id="page-title"><span data-i18n="heading">Medal standings</span><span class="title-dot">.</span></h1>
+      <p class="intro-copy"><span data-i18n="introFirst">Teams that reach the podium.</span><br><span data-i18n="introSecond">Gold, silver, and bronze from BOINC challenges in one table.</span></p>
+    </section>
+
+    <section class="standings" data-i18n-label="results" aria-label="Challenge results">
+      <div class="filters">
+        <div class="filter">
+          <label for="year" data-i18n="year">Year</label>
+          <select id="year" disabled><option value="all" data-i18n="allTime">All time</option></select>
+        </div>
+        <div class="filter filter-type">
+          <label for="challenge-type" data-i18n="challengeType">Challenge type</label>
+          <select id="challenge-type" disabled>
+            <option value="all" data-i18n="allTypes">All types</option>
+            <option value="team" data-i18n="teamType">Team</option>
+            <option value="project" data-i18n="projectType">Project</option>
+          </select>
+        </div>
+        <p class="filter-note"><span data-i18n="yearNoteFirst">Year is based on the challenge</span> <br><span data-i18n="yearNoteSecond">end date in UTC.</span></p>
+      </div>
+
+      <div class="results-heading">
+        <h2 data-i18n="teamStandings">Team standings</h2>
+        <span id="team-count" class="team-count"></span>
+      </div>
+      <div id="results" aria-busy="true">
+        <div class="table-scroll" role="region" data-i18n-label="medalTable" aria-label="Medal table" tabindex="0">
+          <table>
+            <caption class="sr-only" data-i18n="caption">Team medals for the selected period and challenge type</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="team-column" data-i18n="team">Team</th>
+                <th scope="col"><span class="medal-dot gold" aria-hidden="true"></span><span data-i18n="gold">Gold</span></th>
+                <th scope="col"><span class="medal-dot silver" aria-hidden="true"></span><span data-i18n="silver">Silver</span></th>
+                <th scope="col"><span class="medal-dot bronze" aria-hidden="true"></span><span data-i18n="bronze">Bronze</span></th>
+                <th scope="col" class="total-column" data-i18n="total">Total</th>
+              </tr>
+            </thead>
+            <tbody id="medal-rows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="feedback">
+        <p id="status" role="status" aria-live="polite">Loading…</p>
+        <button id="retry" type="button" data-i18n="retry" hidden>Retry</button>
+      </div>
+      <noscript><p class="noscript">Enable JavaScript in your browser to load the standings.</p></noscript>
+      <div class="table-note"><span aria-hidden="true">↗</span> <span data-i18n="tableNote">Gold first, then silver and bronze — the Olympic system.</span></div>
+    </section>
+
+    <footer>
+      <span><span data-i18n="source">Challenge results from</span> <a href="https://www.boincstats.com/">BoincStats</a></span>
+      <span data-i18n="medalPlaces">1st place — gold · 2nd — silver · 3rd — bronze</span>
+    </footer>
+  </main>
+</body>
+</html>
